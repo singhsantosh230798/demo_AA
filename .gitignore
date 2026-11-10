@@ -1,0 +1,21 @@
+node_modules/
+.env
+api/.env
+web-tests/node_modules/
+web-tests/.env
+
+# Test Companion onboarding (local, per-machine)
+.test-companion/
+.DS_Store
+web-tests/node_modules/
+web-tests/.env
+web-tests/log
+web-tests/.percy-baseline-build-id
+browserstack.err
+local.log
+.cursor
+app-tests/node_modules/
+app-tests/.env
+app-tests/log
+app-tests/logs
+app-tests/.app-url

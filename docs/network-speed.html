@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Network Speed Test — BrowserStack Automate</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+<nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+  <div class="max-w-3xl mx-auto px-6 h-16 flex items-center gap-3">
+    <a href="index.html" class="text-gray-500 hover:text-gray-700 text-sm">&#8592; All demos</a>
+    <span class="text-gray-300">|</span>
+    <span class="font-semibold text-gray-900 text-sm">Network Speed Test</span>
+  </div>
+</nav>
+<div class="max-w-3xl mx-auto px-6 py-10 space-y-6">
+  <h1 class="text-2xl font-bold text-gray-900">Network Speed Test</h1>
+  <p class="text-gray-500 text-sm">Measure download speed and latency — validates BrowserStack network throttling profiles</p>
+  <div class="bg-white rounded-2xl border border-gray-200 p-6 space-y-5">
+    <div class="grid grid-cols-3 gap-4 text-center">
+      <div class="bg-yellow-50 rounded-xl p-4"><p class="text-xs text-yellow-600 mb-1">Download Speed</p><p id="speed-result" class="text-3xl font-bold text-yellow-900">--</p><p class="text-xs text-yellow-600 mt-1">Mbps</p></div>
+      <div class="bg-gray-50 rounded-xl p-4"><p class="text-xs text-gray-500 mb-1">Latency</p><p id="speed-latency" class="text-3xl font-bold text-gray-900">--</p><p class="text-xs text-gray-500 mt-1">ms</p></div>
+      <div class="bg-gray-50 rounded-xl p-4"><p class="text-xs text-gray-500 mb-1">Connection Type</p><p id="effective-type" class="text-3xl font-bold text-gray-900">--</p><p class="text-xs text-gray-500 mt-1">Network Info API</p></div>
+    </div>
+    <div class="w-full bg-gray-100 rounded-full h-2"><div id="speed-progress-bar" class="bg-yellow-500 h-2 rounded-full transition-all" style="width:0%"></div></div>
+    <button id="run-speed-test" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2.5 rounded-xl">Run Speed Test</button>
+    <p id="speed-status" class="text-center text-sm text-gray-500 hidden"></p>
+  </div>
+  </div>
+<script>
+const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+if (conn) document.getElementById("effective-type").textContent = conn.effectiveType || "--";
+
+// Cloudflare generates uncompressed bytes on the fly (not CDN-cached), so throughput
+// reflects BrowserStack networkProfile throttling instead of a cached/tiny transfer.
+const DOWN_URL = "https://speed.cloudflare.com/__down";
+const LATENCY_BYTES = 1000;
+const MEASURE_BYTES = 5_000_000; // 5 MB — large enough that TTFB noise doesn't dominate
+const SAMPLES = 3;
+
+let requestSeq = 0;
+function downloadUrl(bytes) {
+  return DOWN_URL + "?bytes=" + bytes + "&_=" + Date.now() + "-" + (++requestSeq);
+}
+
+/** Full round-trip time for a tiny download (includes TTFB — good latency proxy). */
+async function measureLatencyMs() {
+  const t0 = performance.now();
+  const resp = await fetch(downloadUrl(LATENCY_BYTES), { cache: "no-store", mode: "cors" });
+  if (!resp.ok) throw new Error("Latency probe failed (HTTP " + resp.status + ")");
+  await resp.arrayBuffer();
+  return performance.now() - t0;
+}
+
+/** Throughput sample: bytes and ms from first body byte → last byte (excludes TTFB). */
+async function measureThroughput() {
+  const resp = await fetch(downloadUrl(MEASURE_BYTES), { cache: "no-store", mode: "cors" });
+  if (!resp.ok) throw new Error("Download failed (HTTP " + resp.status + ")");
+  if (!resp.body) {
+    const start = performance.now();
+    const buf = await resp.arrayBuffer();
+    return { bytes: buf.byteLength, transferMs: performance.now() - start };
+  }
+  const reader = resp.body.getReader();
+  let received = 0;
+  let firstByte = null;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (firstByte === null) firstByte = performance.now();
+    received += value.byteLength;
+  }
+  if (firstByte === null || received === 0) throw new Error("Empty download response");
+  return { bytes: received, transferMs: performance.now() - firstByte };
+}
+
+function mbpsFrom(sample) {
+  const seconds = sample.transferMs / 1000;
+  if (seconds < 0.05) throw new Error("Transfer too fast to measure reliably");
+  return (sample.bytes * 8) / seconds / 1e6;
+}
+
+function median(values) {
+  const sorted = values.slice().sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+document.getElementById("run-speed-test").addEventListener("click", async () => {
+  const btn = document.getElementById("run-speed-test");
+  const status = document.getElementById("speed-status");
+  const bar = document.getElementById("speed-progress-bar");
+  btn.disabled = true;
+  btn.textContent = "Testing...";
+  status.classList.remove("hidden");
+  document.getElementById("speed-result").textContent = "--";
+  document.getElementById("speed-latency").textContent = "--";
+
+  try {
+    status.textContent = "Warming up connection...";
+    bar.style.width = "5%";
+    // Discarded: primes TCP/TLS so real samples aren't skewed by handshake cost
+    await measureLatencyMs();
+
+    status.textContent = "Measuring latency...";
+    bar.style.width = "15%";
+    const latencySamples = [];
+    for (let i = 0; i < SAMPLES; i++) {
+      latencySamples.push(await measureLatencyMs());
+      bar.style.width = (15 + ((i + 1) / SAMPLES) * 15) + "%";
+    }
+    document.getElementById("speed-latency").textContent = Math.round(median(latencySamples));
+
+    status.textContent = "Measuring download speed...";
+    const speedSamples = [];
+    for (let i = 0; i < SAMPLES; i++) {
+      status.textContent = "Measuring download speed... (" + (i + 1) + "/" + SAMPLES + ")";
+      speedSamples.push(mbpsFrom(await measureThroughput()));
+      bar.style.width = (30 + ((i + 1) / SAMPLES) * 70) + "%";
+    }
+    document.getElementById("speed-result").textContent = median(speedSamples).toFixed(2);
+    status.textContent = "Test complete";
+  } catch (e) {
+    status.textContent = "Error: " + e.message;
+  }
+
+  if (conn) document.getElementById("effective-type").textContent = conn.effectiveType || "--";
+  btn.disabled = false;
+  btn.textContent = "Run Speed Test";
+});
+</script>
+</body>
+</html>
