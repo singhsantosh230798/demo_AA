@@ -91,7 +91,11 @@ app.post("/trigger", async (c) => {
     return c.json({ error: "username and accessKey are required" }, 400);
   }
 
-  const product = body.product ?? "automate";
+  const product =
+    body.product ??
+    (body.platform === "android" || body.platform === "ios"
+      ? "app-automate"
+      : "automate");
   if (product !== "automate" && product !== "app-automate") {
     return c.json({ error: `Unknown product: ${product}` }, 400);
   }

@@ -15,6 +15,10 @@ exports.config = {
   user: process.env.BROWSERSTACK_USERNAME,
   key: process.env.BROWSERSTACK_ACCESS_KEY,
   hostname: 'hub.browserstack.com',
+  // Tests run on a BrowserStack cloud device, so no local display is needed. The local
+  // runner's xvfb-run wrapper breaks the worker's IPC channel on GitHub runners
+  // ("Error: write EINVAL" at process.send in @wdio/local-runner/build/run.js).
+  autoXvfb: false,
   specs,
   maxInstances: 5,
   logLevel: 'info',
@@ -37,8 +41,8 @@ exports.config = {
   capabilities: [
     {
       platformName: 'android',
-      'appium:deviceName': 'Google Pixel 8',
-      'appium:platformVersion': '14.0',
+      'appium:deviceName': 'Samsung Galaxy S23',
+      'appium:platformVersion': '13.0',
       'appium:automationName': 'UiAutomator2',
       'appium:autoGrantPermissions': false,
       'bstack:options': {
