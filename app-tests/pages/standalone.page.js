@@ -75,6 +75,15 @@ class StandalonePage extends BasePage {
     await this.openFeature('standalone_item_files');
   }
 
+  // Pushes sample.pdf to the device, opens the app's file picker and selects it.
+  async uploadSamplePdf() {
+    const devicePath = '/sdcard/Download/sample.pdf';
+    await this.pushSamplePdf(devicePath);
+    await this.clickWhenReady(await this.byId('hook_file_upload'));
+    const file = await this.byUiSelector('text("sample.pdf")');
+    await this.clickWhenReady(file, 15000);
+  }
+
   async downloadSamplePdf() {
     await this.clickWhenReady(await this.byId('hook_file_download'));
   }
