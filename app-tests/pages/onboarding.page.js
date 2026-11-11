@@ -108,7 +108,11 @@ class OnboardingPage extends BasePage {
   // press is not swallowed by the previous transition (e.g. the share-receipt sheet).
   async pressBackAndWaitForChange(timeout = 10000) {
     const before = await driver.getPageSource();
-    await driver.pressKeyCode(4);
+    try {
+      await driver.execute("mobile: pressKey", { keycode: 4 });
+    } catch (e) {
+      await driver.back();
+    }
     await driver.waitUntil(async () => (await driver.getPageSource()) !== before, {
       timeout,
       timeoutMsg: "Screen did not change after pressing Android BACK",
