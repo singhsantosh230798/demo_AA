@@ -117,6 +117,7 @@ class OnboardingPage extends BasePage {
       timeout,
       timeoutMsg: "Screen did not change after pressing Android BACK",
     });
+    await this.waitForScreenToSettle();
   }
 }
 
