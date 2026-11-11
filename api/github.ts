@@ -25,9 +25,14 @@ export const APP_ANDROID_WORKFLOW_FILES: Record<string, string> = {
   network: "android-network.yml",
   gps: "android-gps.yml",
   otp: "android-otp.yml",
+  // Full BFSI onboarding flow end to end (specs/full-flow.spec.js).
+  e2e: "android-e2e.yml",
 };
 
 export const APP_ANDROID_FEATURES = Object.keys(APP_ANDROID_WORKFLOW_FILES);
+
+// What "run everything" dispatches when no feature is selected: the individual features, not the e2e flow.
+export const APP_ANDROID_DEFAULT_FEATURES = APP_ANDROID_FEATURES.filter((f) => f !== "e2e");
 
 export type DispatchInputs = {
   username: string;

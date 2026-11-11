@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import {
+  APP_ANDROID_DEFAULT_FEATURES,
   APP_ANDROID_FEATURES,
   APP_ANDROID_WORKFLOW_FILES,
   dispatchWorkflow,
@@ -136,7 +137,7 @@ app.post("/trigger", async (c) => {
     }
 
     // No features selected => run every Android feature workflow.
-    const selected = features.length > 0 ? features : APP_ANDROID_FEATURES;
+    const selected = features.length > 0 ? features : APP_ANDROID_DEFAULT_FEATURES;
     const appRuns = await Promise.all(
       selected.map(async (feature) => {
         const workflow = `app-android-${feature}`;
