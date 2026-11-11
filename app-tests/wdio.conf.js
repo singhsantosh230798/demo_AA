@@ -45,7 +45,7 @@ exports.config = {
       'appium:deviceName': 'Samsung Galaxy S23',
       'appium:platformVersion': '13.0',
       'appium:automationName': 'UiAutomator2',
-      'appium:autoGrantPermissions': false,
+      'appium:autoGrantPermissions': true,
       'bstack:options': {
         projectName: 'NexusDemo BFSI Automation',
         buildName: process.env.BUILD_NAME || 'NexusDemo BFSI - WebdriverIO',
