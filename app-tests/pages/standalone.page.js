@@ -45,6 +45,19 @@ class StandalonePage extends BasePage {
     await this.allowPermission();
   }
 
+  // The video camera screen shows "Start Recording"; while recording it shows "\u25cf REC" and "Stop & Save".
+  async recordInjectedVideo(recordMs = 5000) {
+    await this.clickWhenReady(await this.textView('Start Recording'), 15000);
+    const recIndicator = await this.textView('\u25cf REC');
+    await recIndicator.waitForDisplayed({
+      timeout: 10000,
+      timeoutMsg: 'Expected the recording indicator after tapping Start Recording',
+    });
+    // Let the injected video play into the recording for a few seconds.
+    await driver.pause(recordMs);
+    await this.clickWhenReady(await this.textView('Stop & Save'), 10000);
+  }
+
   // --- Audio injection ---------------------------------------------------
   async openAudio() {
     await this.openFeature('standalone_item_audio');
