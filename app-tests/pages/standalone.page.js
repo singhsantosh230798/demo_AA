@@ -106,6 +106,35 @@ class StandalonePage extends BasePage {
     await this.clickWhenReady(await driver.$('id:android:id/button1'), 15000);
   }
 
+  // --- OTP -----------------------------------------------------------------
+  // The OTP test is below the fold of the Standalone list, so scroll before tapping it.
+  async openOtp() {
+    await this.openStandalone();
+    await driver.execute('mobile: scrollGesture', {
+      left: 200,
+      top: 800,
+      width: 600,
+      height: 1200,
+      direction: 'down',
+      percent: 1.0,
+    });
+    await this.clickWhenReady(await this.byId('standalone_item_otp'));
+  }
+
+  async sendOtp(phoneNumber) {
+    const phone = await driver.$('class name:android.widget.EditText');
+    await phone.waitForDisplayed({ timeout: 15000 });
+    await phone.addValue(phoneNumber);
+    await this.clickWhenReady(await this.textView('Send OTP'));
+  }
+
+  async verifyOtp(code) {
+    const otpField = await driver.$('class name:android.widget.EditText');
+    await otpField.waitForDisplayed({ timeout: 15000 });
+    await otpField.addValue(code);
+    await this.clickWhenReady(await this.textView('Verify OTP'));
+  }
+
   // --- IP geolocation / GPS ---------------------------------------------
   async openIpGeo() {
     await this.openFeature('standalone_item_geo');

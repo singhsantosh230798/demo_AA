@@ -22,7 +22,6 @@ export const APP_ANDROID_WORKFLOW_FILES: Record<string, string> = {
   "video-injection": "android-video-injection.yml",
   "file-upload-download": "android-file-upload-download.yml",
   "audio-injection": "android-audio-injection.yml",
-  "ip-geolocation": "android-ip-geolocation.yml",
   network: "android-network.yml",
   gps: "android-gps.yml",
   otp: "android-otp.yml",
