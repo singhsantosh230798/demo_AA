@@ -77,6 +77,10 @@
   <div id="app-features-card" class="hidden bg-white rounded-2xl border border-gray-200 p-6 space-y-4">
     <h2 class="font-semibold text-gray-900">App Features (Android)</h2>
     <p class="text-sm text-gray-500">Select one or more features to run. Leave all unselected to run the full flow.</p>
+    <label class="flex items-center gap-2 text-sm font-semibold text-gray-900 cursor-pointer">
+      <input type="checkbox" id="app-select-all" class="rounded border-gray-300 text-brand-600 focus:ring-brand-600"/>
+      Select all
+    </label>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="app-workflow-list">
       <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer border border-gray-200 rounded-xl px-3 py-2.5 hover:border-brand-300">
         <input type="checkbox" name="app-feature" value="image-injection" class="rounded border-gray-300 text-brand-600 focus:ring-brand-600"/>
@@ -231,6 +235,24 @@
     el.addEventListener('change', syncProduct);
   });
   syncProduct();
+
+  var selectAllEl = document.getElementById('app-select-all');
+  function appFeatureBoxes() {
+    return Array.from(document.querySelectorAll('input[name="app-feature"]'));
+  }
+  function syncSelectAll() {
+    var boxes = appFeatureBoxes();
+    var checked = boxes.filter(function (el) { return el.checked; }).length;
+    selectAllEl.checked = boxes.length > 0 && checked === boxes.length;
+    selectAllEl.indeterminate = checked > 0 && checked < boxes.length;
+  }
+  selectAllEl.addEventListener('change', function () {
+    appFeatureBoxes().forEach(function (el) { el.checked = selectAllEl.checked; });
+    selectAllEl.indeterminate = false;
+  });
+  appFeatureBoxes().forEach(function (el) {
+    el.addEventListener('change', syncSelectAll);
+  });
 
   function selectedWorkflows() {
     var name = selectedProduct() === 'app-automate' ? 'app-feature' : 'workflow';
