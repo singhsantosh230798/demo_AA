@@ -75,6 +75,15 @@ class StandalonePage extends BasePage {
     await this.openFeature('standalone_item_biometric');
   }
 
+  async runBiometricPrompt() {
+    await this.clickWhenReady(await this.byId('hook_biometric_authorize'));
+  }
+
+  // BrowserStack shows a "Do you want it to pass or fail?" dialog for the biometric prompt.
+  async choosePassOnBiometricDialog() {
+    await this.clickWhenReady(await driver.$('id:android:id/button1'), 15000);
+  }
+
   // --- IP geolocation / GPS ---------------------------------------------
   async openIpGeo() {
     await this.openFeature('standalone_item_geo');
