@@ -119,24 +119,9 @@ class StandalonePage extends BasePage {
     await this.openFeature('standalone_item_audio');
   }
 
-  // Injects the sample audio and taps the first button (Record), allowing the microphone
-  // permission if it is asked for.
-  async startAudioRecording() {
+  // Uploads the sample audio and injects it into the microphone.
+  async injectSampleAudio() {
     await injectAudio('audio_sample.mp3', 'SampleAudio');
-    await this.clickButton(0);
-    await this.allowForegroundPermission();
-    await this.allowPermission();
-  }
-
-  // Lets the injected audio play into the recording, then taps the first button again to stop it.
-  async stopAudioRecording(recordMs = 10000) {
-    await driver.pause(recordMs);
-    await this.clickButton(0);
-  }
-
-  // The status line shown once the recording has stopped.
-  async audioStatus() {
-    return driver.$('//android.widget.TextView[@text="Recorded. Injected audio should play back."]');
   }
 
   // --- File upload & download -------------------------------------------
