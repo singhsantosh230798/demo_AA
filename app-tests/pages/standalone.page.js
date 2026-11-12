@@ -190,8 +190,19 @@ class StandalonePage extends BasePage {
   }
 
   // --- IP geolocation / GPS ---------------------------------------------
+  // The GPS / IP geolocation test is below the fold of the Standalone list, so scroll before
+  // tapping it, the same way as the OTP test.
   async openIpGeo() {
-    await this.openFeature('standalone_item_geo');
+    await this.openStandalone();
+    await driver.execute('mobile: scrollGesture', {
+      left: 200,
+      top: 800,
+      width: 600,
+      height: 1200,
+      direction: 'down',
+      percent: 1.0,
+    });
+    await this.clickWhenReady(await this.byId('standalone_item_geo'));
     await this.allowForegroundPermission();
   }
 
