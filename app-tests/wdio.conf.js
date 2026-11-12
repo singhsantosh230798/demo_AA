@@ -42,8 +42,8 @@ exports.config = {
   capabilities: [
     {
       platformName: 'android',
-      'appium:deviceName': 'Samsung Galaxy *',
-      'appium:platformVersion': '12.0',
+      'appium:deviceName': 'Samsung Galaxy S23',
+      'appium:platformVersion': '13.0',
       'appium:automationName': 'UiAutomator2',
       'appium:autoGrantPermissions': true,
       'bstack:options': {
@@ -62,10 +62,8 @@ exports.config = {
         // networkLogs re-signs HTTPS traffic; the app then rejects its own IP-lookup calls
         // (CertPathValidatorException in the device log). Opt in with NETWORK_LOGS=true.
         networkLogs: true,
-        // Sent only when the audio injection spec is selected: BrowserStack refuses sessions that
-        // ask for it on accounts whose group does not have the feature, which would break the
-        // other specs. The audio injection call itself needs this capability.
-        ...(FEATURES.includes('audio-injection') ? { enableAudioInjection: true } : {}),
+        // Needed for the audio injection spec; the account's group must have the feature enabled.
+        enableAudioInjection: true,
       },
     },
   ],
