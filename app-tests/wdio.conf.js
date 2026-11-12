@@ -62,8 +62,10 @@ exports.config = {
         // networkLogs re-signs HTTPS traffic; the app then rejects its own IP-lookup calls
         // (CertPathValidatorException in the device log). Opt in with NETWORK_LOGS=true.
         networkLogs: true,
-        // Audio injection is opt-in: it needs to be enabled for the account's group.
-        ...(process.env.ENABLE_INJECTION === 'true' ? { enableAudioInjection: true } : {}),
+        // Sent only when the audio injection spec is selected: BrowserStack refuses sessions that
+        // ask for it on accounts whose group does not have the feature, which would break the
+        // other specs. The audio injection call itself needs this capability.
+        ...(FEATURES.includes('audio-injection') ? { enableAudioInjection: true } : {}),
       },
     },
   ],
