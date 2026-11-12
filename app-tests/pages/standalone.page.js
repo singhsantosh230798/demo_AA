@@ -17,8 +17,32 @@ class StandalonePage extends BasePage {
     return this.byUiSelector(`text("${text}")`);
   }
 
+  // The domain cards can sit below the fold on smaller screens, so scroll until the
+  // Standalone card is on screen. Does nothing when it is already visible.
+  async scrollToStandaloneCard() {
+    const card = await this.byId('domain_card_standalone');
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      if (await card.isDisplayed()) return card;
+      await driver.execute('mobile: scrollGesture', {
+        left: 200,
+        top: 800,
+        width: 600,
+        height: 1200,
+        direction: 'down',
+        percent: 1.0,
+      });
+      await this.waitForScreenToSettle();
+    }
+    await card.waitForDisplayed({
+      timeout: 20000,
+      timeoutMsg: 'Expected the Standalone demo card (domain_card_standalone) after scrolling the domain list',
+    });
+    return card;
+  }
+
   async openStandalone() {
-    await this.clickWhenReady(await this.byId('domain_card_standalone'), 20000);
+    const card = await this.scrollToStandaloneCard();
+    await this.clickWhenReady(card, 20000);
   }
 
   async openFeature(itemId) {
@@ -63,11 +87,17 @@ class StandalonePage extends BasePage {
     await this.openFeature('standalone_item_audio');
   }
 
+  // Injects the sample audio, taps Record, and allows the microphone permission if it is asked for.
   async recordInjectedAudio() {
     await injectAudio('audio_sample.mp3', 'SampleAudio');
     await this.clickWhenReady(await this.textView('Record'));
     await this.allowForegroundPermission();
     await this.allowPermission();
+  }
+
+  // The status line under the description, e.g. "Recorded. Injected audio should play back."
+  async audioStatus() {
+    return this.byUiSelector('textContains("Injected audio")');
   }
 
   // --- File upload & download -------------------------------------------
