@@ -42,8 +42,8 @@ exports.config = {
   capabilities: [
     {
       platformName: 'android',
-      'appium:deviceName': 'Samsung Galaxy S23',
-      'appium:platformVersion': '13.0',
+      'appium:deviceName': 'Samsung Galaxy S22',
+      'appium:platformVersion': '12',
       'appium:automationName': 'UiAutomator2',
       'appium:autoGrantPermissions': true,
       'bstack:options': {
@@ -56,6 +56,7 @@ exports.config = {
         video: true,
         enableCameraImageInjection: true,
         enableCameraVideoInjection: true,
+        enableAudioInjection: true,
         enableBiometric: true,
         appProfiling: true,
         ...(process.env.GEO_LOCATION ? { geoLocation: process.env.GEO_LOCATION } : {}),
@@ -63,7 +64,6 @@ exports.config = {
         // (CertPathValidatorException in the device log). Opt in with NETWORK_LOGS=true.
         networkLogs: true,
         // Needed for the audio injection spec; the account's group must have the feature enabled.
-        enableAudioInjection: true,
       },
     },
   ],
