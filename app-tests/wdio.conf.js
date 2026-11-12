@@ -43,7 +43,7 @@ exports.config = {
     {
       platformName: 'android',
       'appium:deviceName': 'Samsung Galaxy S22',
-      'appium:platformVersion': '12',
+      'appium:platformVersion': '12.0',
       'appium:automationName': 'UiAutomator2',
       'appium:autoGrantPermissions': true,
       'bstack:options': {
