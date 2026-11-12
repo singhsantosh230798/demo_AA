@@ -42,8 +42,8 @@ exports.config = {
   capabilities: [
     {
       platformName: 'android',
-      'appium:deviceName': 'Samsung Galaxy S23',
-      'appium:platformVersion': '13.0',
+      'appium:deviceName': 'Samsung Galaxy *',
+      'appium:platformVersion': '12.0',
       'appium:automationName': 'UiAutomator2',
       'appium:autoGrantPermissions': true,
       'bstack:options': {
