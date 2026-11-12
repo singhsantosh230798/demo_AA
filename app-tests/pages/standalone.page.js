@@ -79,7 +79,38 @@ class StandalonePage extends BasePage {
     });
     // Let the injected video play into the recording for a few seconds.
     await driver.pause(recordMs);
-    await this.clickWhenReady(await this.textView('Stop & Save'), 10000);
+    await this.tapStopAndSave();
+  }
+
+  // "Stop & Save" is a non-clickable TextView drawn inside an unlabelled Button, so tapping the
+  // text itself does nothing. Tap the Button whose bounds contain the label instead.
+  async tapStopAndSave() {
+    const label = await this.textView('Stop & Save');
+    await label.waitForDisplayed({
+      timeout: 10000,
+      timeoutMsg: 'Expected the "Stop & Save" label while recording',
+    });
+    const { x, y, width, height } = await driver.getElementRect(label.elementId);
+    const centreX = Math.round(x + width / 2);
+    const centreY = Math.round(y + height / 2);
+
+    const buttons = await driver.$$('-android uiautomator:new UiSelector().className("android.widget.Button")');
+    for (const button of buttons) {
+      const rect = await driver.getElementRect(button.elementId);
+      const contains =
+        centreX >= rect.x &&
+        centreX <= rect.x + rect.width &&
+        centreY >= rect.y &&
+        centreY <= rect.y + rect.height;
+      if (contains) {
+        await button.click();
+        await this.waitForScreenToSettle();
+        return;
+      }
+    }
+    // No button wraps the label: tap the label's own position.
+    await driver.execute('mobile: clickGesture', { x: centreX, y: centreY });
+    await this.waitForScreenToSettle();
   }
 
   // --- Audio injection ---------------------------------------------------
@@ -87,17 +118,24 @@ class StandalonePage extends BasePage {
     await this.openFeature('standalone_item_audio');
   }
 
-  // Injects the sample audio, taps Record, and allows the microphone permission if it is asked for.
-  async recordInjectedAudio() {
+  // Injects the sample audio and taps the first button (Record), allowing the microphone
+  // permission if it is asked for.
+  async startAudioRecording() {
     await injectAudio('audio_sample.mp3', 'SampleAudio');
-    await this.clickWhenReady(await this.textView('Record'));
+    await this.clickButton(0);
     await this.allowForegroundPermission();
     await this.allowPermission();
   }
 
-  // The status line under the description, e.g. "Recorded. Injected audio should play back."
+  // Lets the injected audio play into the recording, then taps the first button again to stop it.
+  async stopAudioRecording(recordMs = 10000) {
+    await driver.pause(recordMs);
+    await this.clickButton(0);
+  }
+
+  // The status line shown once the recording has stopped.
   async audioStatus() {
-    return this.byUiSelector('textContains("Injected audio")');
+    return driver.$('//android.widget.TextView[@text="Recorded. Injected audio should play back."]');
   }
 
   // --- File upload & download -------------------------------------------
