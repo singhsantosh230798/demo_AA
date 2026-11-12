@@ -72,7 +72,8 @@ class StandalonePage extends BasePage {
   // The video camera screen shows "Start Recording"; while recording it shows "\u25cf REC" and "Stop & Save".
   async recordInjectedVideo(recordMs = 5000) {
     await this.clickWhenReady(await this.textView('Start Recording'), 15000);
-    const recIndicator = await this.textView('\u25cf REC');
+    // While recording the label carries a running counter ("\u25cf REC  8 s"), so match its start.
+    const recIndicator = await this.byUiSelector('textStartsWith("\u25cf REC")');
     await recIndicator.waitForDisplayed({
       timeout: 10000,
       timeoutMsg: 'Expected the recording indicator after tapping Start Recording',
